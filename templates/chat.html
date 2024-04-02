@@ -1,0 +1,125 @@
+{% extends 'layouts/app.html' %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Prompt Messages Container - Modify the height according to your need -->
+    <div class="flex h-screen w-full flex-col bg-slate-300 dark:bg-slate-800">
+
+        <div id="logoarea" class="flex-1 flex items-center justify-center">
+            <img src="{{ url_for('static', filename='mstar_logo_new.svg') }}" class="h-[128px]" />
+        </div>
+
+        <div id="chatarea"
+            class="flex-1 overflow-y-auto bg-slate-300 text-sm leading-6 text-slate-900 shadow-md dark:bg-slate-800 dark:text-slate-300 sm:text-base sm:leading-7">
+        </div>
+
+        <!-- Prompt message input -->
+        <div class="border-t border-slate-300 p-2 dark:border-slate-700 bg-slate-200 dark:bg-slate-900">
+
+            <div
+                class="mx-auto grid w-full max-w-3xl grid-cols-2 gap-4 text-xs text-slate-600 dark:text-slate-300 sm:grid-cols-3 sm:gap-2 sm:text-sm md:grid-cols-4 md:text-base mb-3 mt-2">
+                {% for keyword in keywords %}
+                <button
+                    class="keyword-btn rounded-lg bg-slate-200 p-2 hover:bg-blue-600 hover:text-slate-200 dark:bg-slate-800 dark:hover:bg-blue-600 dark:hover:text-slate-50">
+                    {{ keyword }}
+                </button>
+                {% endfor %}
+            </div>
+
+            <form class="flex w-full items-center">
+                <label for="chat" class="sr-only">Enter your prompt</label>
+                <textarea id="chat-input" rows="1"
+                    class="mx-2 flex min-h-full w-full rounded-md border border-slate-300 bg-slate-50 p-2 text-base text-slate-900 placeholder-slate-400 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50 dark:placeholder-slate-400 dark:focus:border-blue-600 dark:focus:ring-blue-600"
+                    placeholder="Enter your prompt"></textarea>
+                <div>
+                    <button class="inline-flex hover:text-blue-600 dark:text-slate-200 dark:hover:text-blue-600 sm:p-2"
+                        type="submit">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" aria-hidden="true" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                            stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M10 14l11 -11"></path>
+                            <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5">
+                            </path>
+                        </svg>
+                        <span class="sr-only">Send message</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(function () {
+        $("#logoarea").show();
+        $("#chatarea").hide();
+
+        $(".keyword-btn").click((e) => {
+            var chatInput = $("#chat-input").val();
+            var keyword = e.target.innerText;
+
+            if (chatInput.length > 0) {
+                chatInput += " " + keyword;
+            } else {
+                chatInput = keyword;
+            }
+
+            $("#chat-input").val(chatInput);
+        });
+
+        $("form").submit((e) => {
+            e.preventDefault();
+
+            var chatInput = $("#chat-input").val();
+            $("#chatarea").show();
+            $("#logoarea").hide();
+
+            $("#chatarea").append(`
+                <div class="flex flex-row px-4 py-8 sm:px-6">
+                    <img
+                        class="mr-2 flex h-8 w-8 rounded-full sm:mr-4"
+                        src="https://dummyimage.com/256x256/363536/ffffff&text=U"
+                    />
+
+                    <div class="flex max-w-3xl items-center">
+                        <p>${chatInput}</p>
+                    </div>
+                </div>
+            `);
+            $("#chat-input").val("");
+
+            $.ajax({
+                url: "{{ url_for('ask') }}",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    question: chatInput
+                }),
+                success: function (response) {
+                    console.log(response);
+                    $("#chatarea").append(`
+                        <div class="flex bg-slate-100 px-4 py-8 dark:bg-slate-900 sm:px-6">
+                            <img
+                                class="mr-2 flex h-8 w-8 rounded-full sm:mr-4"
+                                src="https://dummyimage.com/256x256/354ea1/ffffff&text=G"
+                            />
+
+                            <div
+                                class="flex w-full flex-col items-start lg:flex-row lg:justify-between"
+                            >
+                                <p>
+                                    ${response.response}
+                                </p>
+                            </div>
+                        </div>
+                    `);
+                    $("#chatarea").scrollTop($("#chatarea")[0].scrollHeight);
+                }
+            });
+        })
+    });
+</script>
+{% endblock %}
