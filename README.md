@@ -28,8 +28,9 @@ This is a Python Flask web application for querying PDF documents using the Llam
 GRADIENT_WORKSPACE_ID=<your_gradient_workspace_id>
 GRADIENT_ACCESS_TOKEN=<your_gradient_access_token>
 
+4. Save the required pdf to data folder.
 
-4. Run the application:python app.py
+5. Run the application:python app.py
 
 
 ## Usage
